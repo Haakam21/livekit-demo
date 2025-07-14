@@ -1,7 +1,9 @@
 from dotenv import load_dotenv
 
+from agentmail import AgentMail
+
 from livekit import agents
-from livekit.agents import AgentSession, Agent, RoomInputOptions
+from livekit.agents import AgentSession, Agent, ChatContext, RoomInputOptions
 from livekit.plugins import (
     openai,
     noise_cancellation,
@@ -9,10 +11,29 @@ from livekit.plugins import (
 
 load_dotenv()
 
+client = AgentMail()
+
+inbox = client.inboxes.create(
+    username="livekit",
+    display_name="LiveKit",
+    client_id="livekit-inbox",
+)
+
 
 class Assistant(Agent):
     def __init__(self) -> None:
-        super().__init__(instructions="You are a helpful voice AI assistant.")
+        threads = client.inboxes.threads.list(inbox_id=inbox.inbox_id, limit=20)
+
+        initial_ctx = ChatContext()
+        initial_ctx.add_message(
+            role="system",
+            content=f"Here are the latest threads in your inbox: {str(threads)}",
+        )
+
+        super().__init__(
+            instructions=f"You are a helpful voice and email AI assistant. Your email address is {inbox.inbox_id}.",
+            chat_ctx=initial_ctx,
+        )
 
 
 async def entrypoint(ctx: agents.JobContext):
@@ -32,7 +53,7 @@ async def entrypoint(ctx: agents.JobContext):
     await ctx.connect()
 
     await session.generate_reply(
-        instructions="Greet the user and offer your assistance."
+        instructions="Greet the user, summarize the latest threads in your inbox, and offer your assistance."
     )
 
 
