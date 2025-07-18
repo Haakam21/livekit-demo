@@ -36,7 +36,10 @@ inbox = client.inboxes.create(
 class Assistant(Agent):
     def __init__(self) -> None:
         super().__init__(
-            instructions=f"You are a helpful voice and email AI assistant. You can send, receive, and reply to emails. Your email address is {inbox.inbox_id}. IMPORTANT: When using email tools, always use '{inbox.inbox_id}' as the inbox_id parameter.",
+            instructions=f"""
+            You are a helpful voice and email AI assistant. You can send, receive, and reply to emails. Your email address is {inbox.inbox_id}.
+            IMPORTANT: When using email tools, always use "{inbox.inbox_id}" as the inbox_id parameter. When sending an email, refer to yourself as "LiveKit" in the signature. Always speak in English.
+            """,
             tools=AgentMailToolkit(client=client).get_tools(
                 ["list_threads", "get_thread", "send_message", "reply_to_message"]
             ),
@@ -56,6 +59,8 @@ async def websocket_task(inbox_id, session):
                 logger.debug("Received data: %s", data)
 
                 if data["type"] == "event" and data["event_type"] == "message.received":
+                    session.interrupt()
+
                     await session.generate_reply(
                         instructions=f""""Say "I've recieved an email" and then read the email.""",
                         user_input=str(data["message"]),
