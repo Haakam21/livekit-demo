@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
   "agentmail-toolkit>=0.1.20",
-  "agentmail>=0.0.42",
+  "agentmail>=0.0.44",
   "asyncio>=3.4.3",
   "livekit-agents[openai]~=1.0",
   "livekit-plugins-noise-cancellation~=0.2",
