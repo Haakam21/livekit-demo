@@ -1,8 +1,5 @@
-import os
 import logging
 import asyncio
-
-from dotenv import load_dotenv
 
 from agentmail import AgentMail, AsyncAgentMail
 from agentmail.websockets.types import Subscribe, MessageReceived
@@ -15,10 +12,6 @@ from livekit.plugins import (
     openai,
     noise_cancellation,
 )
-
-load_dotenv()
-
-api_key = os.getenv("AGENTMAIL_API_KEY")
 
 logger = logging.getLogger(__name__)
 
@@ -48,9 +41,7 @@ class Assistant(Agent):
 
     async def _websocket_task(self):
         try:
-            async with AsyncAgentMail().websockets.connect(
-                auth_token=api_key
-            ) as socket:
+            async with AsyncAgentMail().websockets.connect() as socket:
                 logger.info("Connected to AgentMail websocket")
 
                 await socket.send_subscribe(Subscribe(inbox_ids=[self.inbox_id]))
@@ -66,8 +57,6 @@ class Assistant(Agent):
                             instructions=f"""Say "I've recieved an email" and then read the email.""",
                             user_input=data.message.model_dump_json(),
                         )
-        except Exception as e:
-            logger.error("Error in websocket task: %s", e)
         finally:
             logger.info("Disconnected from AgentMail websocket")
 
