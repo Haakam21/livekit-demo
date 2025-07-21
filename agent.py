@@ -35,7 +35,13 @@ class Assistant(Agent):
             IMPORTANT: When using email tools, use "{self.inbox_id}" as the inbox_id parameter. When writing an email, refer to yourself as "LiveKit" in the signature. Always speak in English.
             """,
             tools=AgentMailToolkit().get_tools(
-                ["list_threads", "get_thread", "send_message", "reply_to_message"]
+                [
+                    "list_threads",
+                    "get_thread",
+                    "get_attachment",
+                    "send_message",
+                    "reply_to_message",
+                ]
             ),
         )
 
