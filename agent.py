@@ -1,10 +1,8 @@
 import logging
 import asyncio
 
-from agentmail import AgentMail, AsyncAgentMail
-from agentmail.websockets.types import Subscribe, MessageReceived
+from agentmail import AgentMail, AsyncAgentMail, Subscribe, MessageReceived
 from agentmail_toolkit.livekit import AgentMailToolkit
-
 
 from livekit import agents
 from livekit.agents import AgentSession, Agent, RoomInputOptions, JobContext
@@ -21,7 +19,9 @@ class Assistant(Agent):
     ws_task: asyncio.Task | None = None
 
     def __init__(self) -> None:
-        inbox = AgentMail().inboxes.create(
+        client = AgentMail()
+
+        inbox = client.inboxes.create(
             username="livekit",
             display_name="LiveKit",
             client_id="livekit-inbox",
@@ -34,7 +34,7 @@ class Assistant(Agent):
             You are a helpful voice and email AI assistant. You can send, receive, and reply to emails. Your email address is {self.inbox_id}.
             IMPORTANT: When using email tools, use "{self.inbox_id}" as the inbox_id parameter. When writing an email, refer to yourself as "LiveKit" in the signature. Always speak in English.
             """,
-            tools=AgentMailToolkit().get_tools(
+            tools=AgentMailToolkit(client=client).get_tools(
                 [
                     "list_threads",
                     "get_thread",
