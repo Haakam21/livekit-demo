@@ -31,8 +31,8 @@ class Assistant(Agent):
 
         super().__init__(
             instructions=f"""
-            You are a helpful voice and email AI assistant. You can send, receive, and reply to emails. Your email address is {self.inbox_id}.
-            IMPORTANT: When using email tools, use "{self.inbox_id}" as the inbox_id parameter. When writing an email, refer to yourself as "LiveKit" in the signature. Always speak in English.
+            You are a helpful voice and email AI assistant. Your name is LiveKit. You can send, receive, and reply to emails. Your email address is {self.inbox_id}.
+            IMPORTANT: When using email tools, use "{self.inbox_id}" as the inbox_id parameter. When writing emails, include "LiveKit" in the signature. Always speak in English.
             """,
             tools=AgentMailToolkit(client=client).get_tools(
                 [
@@ -70,7 +70,7 @@ class Assistant(Agent):
         self.ws_task = asyncio.create_task(self._websocket_task())
 
         await self.session.generate_reply(
-            instructions=f"In English, greet the user, inform them that you can recieve emails at {self.inbox_id}, and offer your assistance."
+            instructions=f"In English, greet the user, introduce yourself as LiveKit, inform them that you can recieve emails at {self.inbox_id}, and offer your assistance."
         )
 
     async def on_exit(self):
