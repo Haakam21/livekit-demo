@@ -1,4 +1,5 @@
 import asyncio
+import random
 
 from agentmail import AgentMail, AsyncAgentMail, Subscribe, MessageReceived
 from agentmail_toolkit.livekit import AgentMailToolkit
@@ -25,9 +26,8 @@ class EmailAssistant(Agent):
         client = AgentMail()
 
         inbox = client.inboxes.create(
-            username="lisa",
             display_name="Lisa",
-            client_id="lisa-inbox",
+            username=f"lisa{random.randint(0, 999):03d}",
         )
 
         self.inbox_id = inbox.inbox_id
