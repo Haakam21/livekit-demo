@@ -14,7 +14,8 @@ from livekit.agents import (
     AudioConfig,
     BuiltinAudioClip,
 )
-from livekit.plugins import openai, noise_cancellation, silero
+from openai.types.beta.realtime.session import TurnDetection
+from livekit.plugins import openai, noise_cancellation
 
 
 logger = logging.getLogger(__name__)
@@ -89,15 +90,17 @@ class EmailAssistant(Agent):
 
 async def entrypoint(ctx: JobContext):
     session = AgentSession(
-        vad=silero.VAD.load(),
-        llm=openai.realtime.RealtimeModel(voice="shimmer", turn_detection=None),
+        llm=openai.realtime.RealtimeModel(
+            voice="shimmer",
+            turn_detection=TurnDetection(type="semantic_vad"),
+        ),
     )
 
     await session.start(
         room=ctx.room,
         agent=EmailAssistant(),
         room_input_options=RoomInputOptions(
-            noise_cancellation=noise_cancellation.BVCTelephony(),
+            noise_cancellation=noise_cancellation.BVCTelephony()
         ),
     )
 
