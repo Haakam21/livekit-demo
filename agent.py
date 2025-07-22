@@ -15,7 +15,7 @@ from livekit.agents import (
     BuiltinAudioClip,
 )
 from openai.types.beta.realtime.session import TurnDetection
-from livekit.plugins import openai, noise_cancellation
+from livekit.plugins import openai, noise_cancellation, silero
 
 
 class EmailAssistant(Agent):
@@ -69,7 +69,8 @@ class EmailAssistant(Agent):
         self.ws_task = asyncio.create_task(self._websocket_task())
 
         await self.session.generate_reply(
-            instructions=f"""In English, greet the user, introduce yourself as Lisa, inform them that you can "recieve emails" at {self.inbox_id}, and offer your assistance."""
+            instructions=f"""In English, greet the user, introduce yourself as Lisa, inform them that you can "recieve emails" at {self.inbox_id}, and offer your assistance.""",
+            allow_interruptions=False,
         )
 
     async def on_exit(self):
@@ -79,9 +80,10 @@ class EmailAssistant(Agent):
 
 async def entrypoint(ctx: JobContext):
     session = AgentSession(
+        vad=silero.VAD.load(min_silence_duration=0.6),
         llm=openai.realtime.RealtimeModel(
             voice="shimmer",
-            turn_detection=TurnDetection(type="semantic_vad"),
+            turn_detection=None,
         ),
     )
 
