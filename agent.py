@@ -27,17 +27,17 @@ class Assistant(Agent):
         client = AgentMail()
 
         inbox = client.inboxes.create(
-            username="livekit",
-            display_name="LiveKit",
-            client_id="livekit-inbox",
+            username="lisa",
+            display_name="Lisa",
+            client_id="lisa-inbox",
         )
 
         self.inbox_id = inbox.inbox_id
 
         super().__init__(
             instructions=f"""
-            You are a helpful voice and email AI assistant. Your name is LiveKit. You can send, receive, and reply to emails. Your email address is {self.inbox_id}.
-            IMPORTANT: When using email tools, use "{self.inbox_id}" as the inbox_id parameter. When writing emails, include "LiveKit" in the signature.
+            You are a helpful email AI assistant. Your name is Lisa. You can recieve emails at {self.inbox_id}. You can also send and reply to emails.
+            IMPORTANT: When using email tools, use "{self.inbox_id}" as the inbox_id parameter. When writing emails, include "Lisa" in the signature.
             """,
             tools=AgentMailToolkit(client=client).get_tools(
                 [
@@ -74,11 +74,6 @@ class Assistant(Agent):
     async def on_enter(self):
         self.ws_task = asyncio.create_task(self._websocket_task())
 
-        await self.session.generate_reply(
-            instructions=f"Greet the user, introduce yourself as LiveKit, inform them that you can recieve emails at {self.inbox_id}, and offer your assistance.",
-            allow_interruptions=False,
-        )
-
     async def on_exit(self):
         if self.ws_task:
             self.ws_task.cancel()
@@ -88,7 +83,7 @@ async def entrypoint(ctx: JobContext):
     session = AgentSession(
         stt=deepgram.STT(model="nova-3"),
         llm=openai.LLM(model="gpt-4o-mini"),
-        tts=cartesia.TTS(model="sonic-2", voice="bd34afdf-ec8a-46e5-b0de-20b72e47ae3f"),
+        tts=cartesia.TTS(model="sonic-2", voice="713e5b8e-2376-476a-b1e6-a62cb445fa52"),
         vad=silero.VAD.load(),
         turn_detection=EnglishModel(),
     )
@@ -102,6 +97,11 @@ async def entrypoint(ctx: JobContext):
     )
 
     await ctx.connect()
+
+    await session.generate_reply(
+        instructions="""Greet the user, introduce yourself as Lisa, inform them that you can recieve emails at "lisa at agentmail dot tee ohh", and offer your assistance.""",
+        allow_interruptions=False,
+    )
 
 
 if __name__ == "__main__":
