@@ -1,4 +1,3 @@
-import logging
 import asyncio
 
 from agentmail import AgentMail, AsyncAgentMail, Subscribe, MessageReceived
@@ -16,9 +15,6 @@ from livekit.agents import (
 )
 from openai.types.beta.realtime.session import TurnDetection
 from livekit.plugins import openai, noise_cancellation
-
-
-logger = logging.getLogger(__name__)
 
 
 class EmailAssistant(Agent):
@@ -55,32 +51,25 @@ class EmailAssistant(Agent):
         )
 
     async def _websocket_task(self):
-        try:
-            async with AsyncAgentMail().websockets.connect() as socket:
-                logger.info("Connected to AgentMail websocket")
+        async with AsyncAgentMail().websockets.connect() as socket:
+            await socket.send_subscribe(Subscribe(inbox_ids=[self.inbox_id]))
 
-                await socket.send_subscribe(Subscribe(inbox_ids=[self.inbox_id]))
+            while True:
+                data = await socket.recv()
 
-                while True:
-                    data = await socket.recv()
-                    logger.debug("Received data: %s", data)
+                if isinstance(data, MessageReceived):
+                    self.session.interrupt()
 
-                    if isinstance(data, MessageReceived):
-                        self.session.interrupt()
-
-                        await self.session.generate_reply(
-                            instructions=f"""Say "I've recieved an email" and then read the email.""",
-                            user_input=data.message.model_dump_json(),
-                        )
-        finally:
-            logger.info("Disconnected from AgentMail websocket")
+                    await self.session.generate_reply(
+                        instructions=f"""Say "I've recieved an email" and then read the email.""",
+                        user_input=data.message.model_dump_json(),
+                    )
 
     async def on_enter(self):
         self.ws_task = asyncio.create_task(self._websocket_task())
 
         await self.session.generate_reply(
-            instructions=f"In English, greet the user, introduce yourself as Lisa, inform them that you can recieve emails at {self.inbox_id}, and offer your assistance.",
-            allow_interruptions=False,
+            instructions=f"""In English, greet the user, introduce yourself as Lisa, inform them that you can "recieve emails" at {self.inbox_id}, and offer your assistance."""
         )
 
     async def on_exit(self):
@@ -105,7 +94,10 @@ async def entrypoint(ctx: JobContext):
     )
 
     await BackgroundAudioPlayer(
-        thinking_sound=[AudioConfig(BuiltinAudioClip.KEYBOARD_TYPING, volume=0.8)]
+        thinking_sound=[
+            AudioConfig(BuiltinAudioClip.KEYBOARD_TYPING, volume=0.8),
+            AudioConfig(BuiltinAudioClip.KEYBOARD_TYPING2, volume=0.8),
+        ]
     ).start(room=ctx.room, agent_session=session)
 
     await ctx.connect()
