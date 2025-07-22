@@ -8,8 +8,13 @@ from livekit import agents
 from livekit.agents import AgentSession, Agent, RoomInputOptions, JobContext
 from livekit.plugins import (
     openai,
+    cartesia,
+    deepgram,
     noise_cancellation,
+    silero,
 )
+from livekit.plugins.turn_detector.english import EnglishModel
+
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +37,7 @@ class Assistant(Agent):
         super().__init__(
             instructions=f"""
             You are a helpful voice and email AI assistant. Your name is LiveKit. You can send, receive, and reply to emails. Your email address is {self.inbox_id}.
-            IMPORTANT: When using email tools, use "{self.inbox_id}" as the inbox_id parameter. When writing emails, include "LiveKit" in the signature. Always speak in English.
+            IMPORTANT: When using email tools, use "{self.inbox_id}" as the inbox_id parameter. When writing emails, include "LiveKit" in the signature.
             """,
             tools=AgentMailToolkit(client=client).get_tools(
                 [
@@ -70,7 +75,8 @@ class Assistant(Agent):
         self.ws_task = asyncio.create_task(self._websocket_task())
 
         await self.session.generate_reply(
-            instructions=f"In English, greet the user, introduce yourself as LiveKit, inform them that you can recieve emails at {self.inbox_id}, and offer your assistance."
+            instructions=f"Greet the user, introduce yourself as LiveKit, inform them that you can recieve emails at {self.inbox_id}, and offer your assistance.",
+            allow_interruptions=False,
         )
 
     async def on_exit(self):
@@ -79,7 +85,13 @@ class Assistant(Agent):
 
 
 async def entrypoint(ctx: JobContext):
-    session = AgentSession(llm=openai.realtime.RealtimeModel())
+    session = AgentSession(
+        stt=deepgram.STT(model="nova-3"),
+        llm=openai.LLM(model="gpt-4o-mini"),
+        tts=cartesia.TTS(model="sonic-2", voice="bd34afdf-ec8a-46e5-b0de-20b72e47ae3f"),
+        vad=silero.VAD.load(),
+        turn_detection=EnglishModel(),
+    )
 
     await session.start(
         room=ctx.room,

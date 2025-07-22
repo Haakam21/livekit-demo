@@ -8,7 +8,7 @@ dependencies = [
   "agentmail>=0.0.45",
   "agentmail-toolkit>=0.1.21",
   "asyncio>=3.4.3",
-  "livekit-agents[openai]~=1.0",
+  "livekit-agents[deepgram,openai,cartesia,silero,turn-detector]~=1.0",
   "livekit-plugins-noise-cancellation~=0.2",
   "python-dotenv",
   "websockets>=15.0.1",
