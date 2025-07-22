@@ -14,7 +14,6 @@ from livekit.agents import (
     AudioConfig,
     BuiltinAudioClip,
 )
-from openai.types.beta.realtime.session import TurnDetection
 from livekit.plugins import openai, noise_cancellation, silero
 
 
