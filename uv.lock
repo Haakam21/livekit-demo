@@ -23,7 +23,7 @@ wheels = [
 
 [[package]]
 name = "agentmail-toolkit"
-version = "0.1.21"
+version = "0.1.24"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "agentmail" },
@@ -34,9 +34,9 @@ dependencies = [
     { name = "pydantic" },
     { name = "pymupdf" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/63/44/3c483383f702c38763558b382e308fec4302ad2aaddc30eae1bf667e4716/agentmail_toolkit-0.1.21.tar.gz", hash = "sha256:e17855cf8eaedfd99d75f0c029e6bee39eab76de02157f607695b765806cd729", size = 129601 }
+sdist = { url = "https://files.pythonhosted.org/packages/a7/3f/be385ba5450b24f07f3183ea5370b08808930b75fa8fc2f8d90a004c4023/agentmail_toolkit-0.1.24.tar.gz", hash = "sha256:334a610eefef6a7a06fc58c4b06fad4872e9a14397aae89fbe4196beb694b78d", size = 129700 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/9b/fc/f5e212f1676a9c1241e3890013e786d05f3421f70274ca4e4046a1c8a035/agentmail_toolkit-0.1.21-py3-none-any.whl", hash = "sha256:50b99fa8dcb8908df19db6f31085530e7a0f3a964302bcf5831d06f5eebb999f", size = 6440 },
+    { url = "https://files.pythonhosted.org/packages/e9/f9/925cb926c424e7598eec390b779362491348d2c29b1a75759e5bb3a528d3/agentmail_toolkit-0.1.24-py3-none-any.whl", hash = "sha256:ad2f90a2a19e3e7c074d943e136e7006f58c5b714863fa59a5aabd744fc16ca8", size = 6542 },
 ]
 
 [[package]]
@@ -921,7 +921,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "agentmail", specifier = ">=0.0.45" },
-    { name = "agentmail-toolkit", specifier = ">=0.1.21" },
+    { name = "agentmail-toolkit", specifier = ">=0.1.24" },
     { name = "asyncio", specifier = ">=3.4.3" },
     { name = "livekit-agents", extras = ["deepgram", "openai", "cartesia", "silero", "turn-detector"], specifier = "~=1.0" },
     { name = "livekit-plugins-noise-cancellation", specifier = "~=0.2" },
