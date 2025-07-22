@@ -5,21 +5,22 @@ from agentmail import AgentMail, AsyncAgentMail, Subscribe, MessageReceived
 from agentmail_toolkit.livekit import AgentMailToolkit
 
 from livekit import agents
-from livekit.agents import AgentSession, Agent, RoomInputOptions, JobContext
-from livekit.plugins import (
-    openai,
-    cartesia,
-    deepgram,
-    noise_cancellation,
-    silero,
+from livekit.agents import (
+    AgentSession,
+    Agent,
+    RoomInputOptions,
+    JobContext,
+    BackgroundAudioPlayer,
+    AudioConfig,
+    BuiltinAudioClip,
 )
-from livekit.plugins.turn_detector.english import EnglishModel
+from livekit.plugins import openai, noise_cancellation, silero
 
 
 logger = logging.getLogger(__name__)
 
 
-class Assistant(Agent):
+class EmailAssistant(Agent):
     inbox_id: str
     ws_task: asyncio.Task | None = None
 
@@ -36,8 +37,10 @@ class Assistant(Agent):
 
         super().__init__(
             instructions=f"""
-            You are a helpful email AI assistant. Your name is Lisa. You can recieve emails at {self.inbox_id}. You can also send and reply to emails.
-            IMPORTANT: When using email tools, use "{self.inbox_id}" as the inbox_id parameter. When writing emails, include "Lisa" in the signature.
+            You are a helpful voice and email AI assistant. Your name is Lisa. You can recieve emails at {self.inbox_id}. You can also send and reply to emails.
+            When using email tools, use "{self.inbox_id}" as the inbox_id parameter. When writing emails, include "Lisa" in the signature.
+            Always speak in English.
+            IMPORTANT: {self.inbox_id} is your inbox, not the user's inbox.
             """,
             tools=AgentMailToolkit(client=client).get_tools(
                 [
@@ -74,6 +77,11 @@ class Assistant(Agent):
     async def on_enter(self):
         self.ws_task = asyncio.create_task(self._websocket_task())
 
+        await self.session.generate_reply(
+            instructions=f"In English, greet the user, introduce yourself as Lisa, inform them that you can recieve emails at {self.inbox_id}, and offer your assistance.",
+            allow_interruptions=False,
+        )
+
     async def on_exit(self):
         if self.ws_task:
             self.ws_task.cancel()
@@ -81,27 +89,23 @@ class Assistant(Agent):
 
 async def entrypoint(ctx: JobContext):
     session = AgentSession(
-        stt=deepgram.STT(model="nova-3"),
-        llm=openai.LLM(model="gpt-4o-mini"),
-        tts=cartesia.TTS(model="sonic-2", voice="713e5b8e-2376-476a-b1e6-a62cb445fa52"),
         vad=silero.VAD.load(),
-        turn_detection=EnglishModel(),
+        llm=openai.realtime.RealtimeModel(voice="shimmer", turn_detection=None),
     )
 
     await session.start(
         room=ctx.room,
-        agent=Assistant(),
+        agent=EmailAssistant(),
         room_input_options=RoomInputOptions(
             noise_cancellation=noise_cancellation.BVCTelephony(),
         ),
     )
 
-    await ctx.connect()
+    await BackgroundAudioPlayer(
+        thinking_sound=[AudioConfig(BuiltinAudioClip.KEYBOARD_TYPING, volume=0.8)]
+    ).start(room=ctx.room, agent_session=session)
 
-    await session.generate_reply(
-        instructions="""Greet the user, introduce yourself as Lisa, inform them that you can recieve emails at "lisa at agentmail dot tee ohh", and offer your assistance.""",
-        allow_interruptions=False,
-    )
+    await ctx.connect()
 
 
 if __name__ == "__main__":
