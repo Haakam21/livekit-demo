@@ -1,5 +1,4 @@
 import asyncio
-import random
 
 from agentmail import AgentMail, AsyncAgentMail, Subscribe, MessageReceived
 from agentmail_toolkit.livekit import AgentMailToolkit
@@ -26,7 +25,8 @@ class EmailAssistant(Agent):
 
         inbox = client.inboxes.create(
             display_name="Lisa",
-            username=f"lisa{random.randint(0, 999):03d}",
+            username="lisa",
+            client_id="lisa-inbox",
         )
 
         self.inbox_id = inbox.inbox_id
@@ -80,10 +80,7 @@ class EmailAssistant(Agent):
 async def entrypoint(ctx: JobContext):
     session = AgentSession(
         vad=silero.VAD.load(min_silence_duration=0.6),
-        llm=openai.realtime.RealtimeModel(
-            voice="shimmer",
-            turn_detection=None,
-        ),
+        llm=openai.realtime.RealtimeModel(voice="shimmer", turn_detection=None),
     )
 
     await session.start(
