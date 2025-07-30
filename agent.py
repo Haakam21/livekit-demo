@@ -87,7 +87,7 @@ async def entrypoint(ctx: JobContext):
         room=ctx.room,
         agent=EmailAssistant(),
         room_input_options=RoomInputOptions(
-            noise_cancellation=noise_cancellation.BVCTelephony()
+            noise_cancellation=noise_cancellation.BVC()
         ),
     )
 
